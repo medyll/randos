@@ -27,7 +27,7 @@
     features: (params.get('f') || '').split('|').filter(v => v in featureNames),
     date: /^\d{4}-\d{2}-\d{2}$/.test(params.get('date') || '') && Number.isFinite(fromDate(params.get('date')).getTime()) ? params.get('date') : toDate(new Date()),
     mode: params.get('period') === 'day' ? 'day' : 'week', dayOnly: params.get('day') === '1', eventOnly: params.get('event') === '1',
-    sortKey: 'name', sortDir: 'asc', page: 1, pageSize: 12
+    sortKey: 'name', sortDir: 'asc', page: 1, pageSize: ['25', '50', '100', 'all'].includes(params.get('size')) ? params.get('size') === 'all' ? 'all' : Number(params.get('size')) : 25
   };
   const validKeys = ['name', 'valley', 'ascent', 'col', 'summit', 'lake', 'hours', 'events', 'plan'];
   const sortNames = { name: 'Nom', valley: 'Vallée', ascent: 'Dénivelé', col: 'Col', summit: 'Sommet', lake: 'Lac', hours: 'Durée', events: 'Événements', plan: 'Plan · distance' };
@@ -89,6 +89,7 @@
     if (state.mode === 'day') p.set('period', 'day');
     if (state.dayOnly) p.set('day', '1');
     if (state.eventOnly) p.set('event', '1');
+    if (state.pageSize !== 25) p.set('size', String(state.pageSize));
     if (state.sortKey !== 'name' || state.sortDir !== 'asc') p.set('sort', `${state.sortKey}:${state.sortDir}`);
     history.replaceState(null, '', `${location.pathname}?${p}${location.hash}`);
   }
@@ -137,10 +138,11 @@
     return `<svg viewBox="0 0 760 165" role="img" aria-label="Profil d’altitude : de ${lo} à ${hi} mètres"><path d="M45 30H725M45 80H725M45 130H725" stroke="#e3e8da"/><path d="${d}L725 130H45Z" fill="#dfe8d5"/><path d="${d}" fill="none" stroke="#5b7953" stroke-width="2"/><text x="0" y="34" class="profile-label">${hi} m</text><text x="0" y="134" class="profile-label">${lo} m</text><text x="45" y="156" class="profile-label">Départ</text><text x="673" y="156" class="profile-label">${hike.distance} km</text></svg>`;
   }
   function renderRows() {
-    const pageCount = Math.max(1, Math.ceil(filtered.length / state.pageSize));
+    const pageSize = state.pageSize === 'all' ? Math.max(1, filtered.length) : state.pageSize;
+    const pageCount = Math.max(1, Math.ceil(filtered.length / pageSize));
     state.page = Math.min(state.page, pageCount);
-    const offset = (state.page - 1) * state.pageSize;
-    $('hikes-body').innerHTML = filtered.slice(offset, offset + state.pageSize).map(h => {
+    const offset = (state.page - 1) * pageSize;
+    $('hikes-body').innerHTML = filtered.slice(offset, offset + pageSize).map(h => {
       const related = eventsFor(h);
       return `<tr data-id="${h.id}" title="Ouvrir la fiche détaillée"><td data-label="Itinéraire"><a href="#rando-${h.id}" class="route-link">${esc(h.name)}</a><span class="route-departure">${esc(h.departure)}${!h.dayHike ? ' · Itinérance' : ''}</span></td><td data-label="Vallée">${badges(h.valleys)}</td><td data-label="Dénivelé">+${h.ascent.toLocaleString('fr-FR')} m</td><td data-label="Col">${status(h, 'col')}</td><td data-label="Sommet">${status(h, 'summit')}</td><td data-label="Lac">${status(h, 'lake')}</td><td data-label="Temps total"><span class="duration">${hoursLabel(h.hours)}<small>${esc(h.route === 'Aller-retour' ? 'aller + retour' : h.route === 'Boucle' ? 'boucle complète' : h.route === 'Aller simple' ? 'aller seul' : h.route === 'Itinérance' ? 'itinérance complète' : 'parcours officiel')}</small></span></td><td data-label="Événements">${related.length ? `<span class="events-tag" title="${esc(related.map(e => `${e.name} · ${e.town} · ${shortDate(e.occurrence)}`).join('\n'))}">${related.length} rendez-vous ${state.mode === 'day' ? 'ce jour' : 'cette semaine'}</span>` : '<span class="no-event">Aucun événement<br>répertorié</span>'}</td><td data-label="Plan">${mapSvg(h)}</td></tr>`;
     }).join('');
@@ -148,7 +150,9 @@
     $('empty-results').hidden = !!filtered.length;
     $('result-count').textContent = filtered.length;
     $('result-description').textContent = `${filtered.length} itinéraire${filtered.length > 1 ? 's' : ''} sur ${hikes.length}`;
-    $('page-description').textContent = filtered.length ? `${offset + 1}–${Math.min(offset + state.pageSize, filtered.length)} sur ${filtered.length} itinéraires` : '0 itinéraire';
+    $('page-description').textContent = filtered.length ? `${offset + 1}–${Math.min(offset + pageSize, filtered.length)} sur ${filtered.length} itinéraires` : '0 itinéraire';
+    $('page-size').value = String(state.pageSize);
+    $('pagination-buttons').hidden = pageCount <= 1;
     $('page-number').textContent = `${state.page} / ${pageCount}`;
     $('previous-page').disabled = state.page <= 1;
     $('next-page').disabled = state.page >= pageCount;
@@ -280,6 +284,7 @@
     state.sortKey = header.dataset.key; changed();
   });
   $('sort-select').addEventListener('change', e => { [state.sortKey, state.sortDir] = e.target.value.split(':'); changed(); });
+  $('page-size').addEventListener('change', e => { state.pageSize = e.target.value === 'all' ? 'all' : Number(e.target.value); changed(); });
   $('date').addEventListener('change', e => updateDate(e.target.value));
   $('catalogue-date').addEventListener('change', e => updateDate(e.target.value));
   ['day', 'week'].forEach(mode => $(`catalogue-mode-${mode}`).addEventListener('click', () => { state.mode = mode; changed(); }));

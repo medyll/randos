@@ -34,6 +34,8 @@ Documentation GitHub : [publier avec un workflow personnalisé](https://docs.git
 
 Sur ordinateur, cliquez sur une entête du tableau pour changer de tri ; un second clic inverse l’ordre. Sur mobile, la liste devient une série de cartes et le menu **Trier par** donne accès aux mêmes critères. Le tri du plan utilise la distance du parcours.
 
+La liste affiche 25 résultats par défaut. Le menu **Résultats par page** permet de choisir 25, 50, 100 ou **Tout afficher**. Le choix reste dans l’URL et s’applique aux résultats filtrés ; changer de palier ramène à la première page.
+
 Les cases à cocher permettent de combiner les vallées, les tranches de dénivelé positif de 500 m, les cols, les sommets et les lacs. Plusieurs vallées ou tranches fonctionnent comme des alternatives ; plusieurs éléments du parcours doivent tous être présents. Les tranches qui ne contiennent aucun itinéraire ne s’affichent pas.
 
 La recherche accepte les noms sans accents et porte sur l’itinéraire, le départ et l’arrivée. Les filtres **À la journée uniquement** et **Avec un événement dans la vallée** complètent la sélection. Les paramètres dans l’URL conservent la sélection et la date lorsque vous partagez un lien ou rechargez la page.
