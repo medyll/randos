@@ -25,3 +25,9 @@ Le workflow GitHub Pages est prêt, mais aucun dépôt distant ni déploiement p
 Le catalogue représente les deux sources officielles examinées, pas chaque itinéraire possible du département. Le repérage des cols, sommets et lacs reste automatique ; l’agenda est une sélection sourcée, figée à la date de vérification. Les liens principaux vers les agendas et la liste de sentiers fermés ont été contrôlés, mais les 221 téléchargements GPX/PDF n’ont pas été téléchargés individuellement.
 
 Les captures locales se trouvent dans `preview-desktop.png`, `preview-mobile.png`, `preview-detail.png` et `preview-detail-mobile.png`. Elles restent exclues du dépôt et de la publication.
+
+## Carte interactive
+
+L’intégration Leaflet 1.9.4 a été vérifiée dans Microsoft Edge : présence des trois blocs, tracé GPS et attribution OpenStreetMap, ouverture en grand, recentrage, fermeture avec Échap et avec le bouton, réouverture et retour à la miniature. Les tests couvrent aussi le changement de date, le retour au catalogue, le format mobile et l’ouverture directe du fichier avec un aperçu GPS local. Aucun défaut JavaScript n’a été détecté.
+
+Les tests d’interaction simulent les tuiles pour éviter de solliciter massivement le serveur public. Ils vérifient qu’aucune tuile n’est demandée sur la liste de randonnées.

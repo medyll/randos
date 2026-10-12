@@ -42,6 +42,10 @@ La recherche accepte les noms sans accents et porte sur l’itinéraire, le dép
 
 Cliquez sur un nom ou sur sa ligne pour ouvrir la fiche : tracé GPS, profil d’altitude, dénivelés positif et négatif, distance, durée, coordonnées de départ, difficulté, carte et topo PDF, liens GPX et sources officielles. Le retour à la liste conserve les filtres.
 
+La fiche présente le parcours en trois blocs : **Le parcours, d’un coup d’œil**, **Le relief de l’itinéraire** et **La carte autour du parcours**. La petite carte OpenStreetMap s’ouvre en grand au clic. La grande vue permet de zoomer, de se déplacer et de recentrer le parcours ; Échap ou le bouton de fermeture ramène à la miniature.
+
+Leaflet 1.9.4 et sa licence sont inclus dans `randos/leaflet/`. La carte affiche les coordonnées du catalogue local ; seuls les fonds de carte viennent du serveur public OpenStreetMap. La liste ne charge aucune tuile, même en mode « Tout afficher ». L’attribution reste visible sur la petite et la grande carte.
+
 L’agenda affiche le jour choisi ou la semaine du lundi au dimanche. Le filtre de vallée s’applique à l’agenda ; le dénivelé et les critères de randonnée ne le filtrent pas. Les événements apparaissent également dans les lignes du tableau et les fiches. Ils appartiennent au même secteur, sans garantie de proximité avec le départ.
 
 ## Origine et limites des données
@@ -72,7 +76,11 @@ Les durées reproduisent la durée totale publiée par chaque source. Une boucle
 
 Cols, sommets et lacs font l’objet d’un **repérage textuel automatique** dans le nom et le parcours officiel, en excluant l’accès routier. La fiche indique la méthode et, lorsqu’il existe, un extrait justificatif. Ce repérage reste à confirmer dans le topo. « Non renseigné » signifie que la source ne permet pas de conclure, pas que l’élément est absent. Les cols comprennent aussi les passages appelés « baisse » ou « pas ».
 
-Les aperçus respectent la géométrie du parcours, avec le nord en haut et une projection locale approximative. Ils ne contiennent pas de fond topographique. Le profil utilise les altitudes du tracé simplifié ; les dénivelés affichés restent ceux de la source. Les aperçus servent à choisir un itinéraire, tandis que le topo officiel apporte les balises et les consignes de navigation.
+Les aperçus SVG respectent la géométrie du parcours, avec le nord en haut et une projection locale approximative. Ils ne contiennent pas de fond topographique. La carte interactive ajoute le fond standard OpenStreetMap, sans courbes de niveau. Le profil utilise les altitudes du tracé simplifié ; les dénivelés affichés restent ceux de la source. Les aperçus servent à choisir un itinéraire, tandis que le topo officiel apporte les balises et les consignes de navigation.
+
+Les coordonnées GPS restent enregistrées dans `randos/catalogue.js`, sans requête vers Geotrek à l’ouverture d’une fiche. Le script de publication donne aux fichiers une URL fondée sur l’empreinte SHA-256 de leur contenu. Le navigateur peut donc réutiliser sa copie en cache et récupérer un fichier différent après une actualisation ; un tracé publié peut évoluer, même si les coordonnées d’un lieu ne changent pas.
+
+Le fond OpenStreetMap suit le cache HTTP normal du navigateur et les [conditions du serveur de tuiles](https://operations.osmfoundation.org/policies/tiles/). Aucun téléchargement massif, préchargement de zone ou stockage de fond pour consultation hors ligne n’est proposé. Sans Internet, le tracé GPS et le profil restent disponibles. L’ouverture directe depuis un fichier affiche l’aperçu local à la place du fond en ligne.
 
 L’agenda contient 12 événements ou séries de marchés, vérifiés auprès des organisateurs, des mairies ou des offices de tourisme. Chaque événement conserve sa source. Les marchés hebdomadaires se limitent à l’année 2026 ; aucune fête ne se répète automatiquement l’année suivante. Une période vide affiche « aucun événement répertorié ».
 
@@ -110,4 +118,4 @@ La page ne rafraîchit pas ses données en direct. Poussez le nouveau `randos/ca
 | `data/coverage.json` | Périmètre de collecte et doublons rapprochés |
 | `.github/workflows/pages.yml` | Publication sur GitHub Pages |
 
-La page ne charge ni police distante, ni bibliothèque cartographique, ni outil de suivi. Elle utilise le JavaScript du navigateur et des SVG locaux.
+La page ne charge ni police distante ni outil de suivi. Leaflet est hébergé avec les fichiers du site ; seul le fond de la carte interactive dépend d’un service externe. Les SVG du parcours et du profil restent locaux.

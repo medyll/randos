@@ -8,6 +8,8 @@
   <title>Rando tentative</title>
   <link rel="icon" href="./favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="./randos.css?v=20261012-edge">
+  <link rel="stylesheet" href="./leaflet/leaflet.css">
+  <script defer src="./leaflet/leaflet.js"></script>
   <script defer src="./catalogue.js"></script>
   <script defer src="./randos.js?v=20261012-edge"></script>
 </head>
@@ -62,6 +64,7 @@
 </main>
 <footer-component><p><strong>Rando tentative</strong> <span>Dehors, c’est encore mieux.</span></p><button id="footer-about" class="text-button">Couverture & sources</button><span id="verified-label"></span></footer-component>
 <dialog id="about-dialog" aria-labelledby="about-title"><sources-component><sources-heading><h2 id="about-title">Un catalogue, des sources.</h2><button id="about-close" class="icon-button" aria-label="Fermer les sources">×</button></sources-heading><sources-body id="sources-body"></sources-body></sources-component></dialog>
+<dialog id="map-dialog" aria-labelledby="map-dialog-title"><map-component><map-heading><h2 id="map-dialog-title">La carte du parcours</h2><group-control><button id="map-fit" class="outline-button">Recentrer le parcours</button><button id="map-close" class="icon-button" aria-label="Fermer la grande carte">×</button></group-control></map-heading><map-body id="map-dialog-body"></map-body><p class="data-note">Tracé GPS officiel · fond OpenStreetMap. Les coordonnées sont stockées localement ; le fond de carte nécessite Internet.</p></map-component></dialog>
 <noscript><p>Activez JavaScript pour filtrer les itinéraires, consulter les fiches et sélectionner une date.</p></noscript>
 </body>
 </html>

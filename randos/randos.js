@@ -137,6 +137,75 @@
     const d = samples.map(([x, y], i) => `${i ? 'L' : 'M'}${(45 + x / Math.max(1, cumulative) * 680).toFixed(1)},${(130 - (y - lo) / Math.max(1, hi - lo) * 100).toFixed(1)}`).join(' ');
     return `<svg viewBox="0 0 760 165" role="img" aria-label="Profil d’altitude : de ${lo} à ${hi} mètres"><path d="M45 30H725M45 80H725M45 130H725" stroke="#e3e8da"/><path d="${d}L725 130H45Z" fill="#dfe8d5"/><path d="${d}" fill="none" stroke="#5b7953" stroke-width="2"/><text x="0" y="34" class="profile-label">${hi} m</text><text x="0" y="134" class="profile-label">${lo} m</text><text x="45" y="156" class="profile-label">Départ</text><text x="673" y="156" class="profile-label">${hike.distance} km</text></svg>`;
   }
+  let routeMap = null;
+  function mapSizeChanged() {
+    if (!routeMap) return;
+    routeMap.map?.invalidateSize({ pan: false });
+    if (routeMap.bounds) routeMap.map.fitBounds(routeMap.bounds, { padding: [28, 28], maxZoom: 16, animate: false });
+  }
+  function closeLargeMap() {
+    if (!routeMap || $('map-dialog').open) return;
+    const { canvas, preview, map } = routeMap;
+    preview.prepend(canvas);
+    if (map) {
+      map.dragging.disable(); map.scrollWheelZoom.disable(); map.doubleClickZoom.disable(); map.touchZoom.disable(); map.keyboard.disable();
+      map.zoomControl?.remove();
+    }
+    requestAnimationFrame(mapSizeChanged);
+  }
+  function destroyRouteMap() {
+    if ($('map-dialog').open) $('map-dialog').close();
+    if (routeMap) { routeMap.observer?.disconnect(); routeMap.map?.remove(); routeMap.canvas.remove(); routeMap = null; }
+    $('map-dialog-body').replaceChildren();
+  }
+  function openLargeMap() {
+    if (!routeMap) return;
+    $('map-dialog-title').textContent = routeMap.name;
+    $('map-dialog-body').append(routeMap.canvas);
+    $('map-dialog').showModal();
+    if (routeMap.map) {
+      const map = routeMap.map;
+      map.dragging.enable(); map.scrollWheelZoom.enable(); map.doubleClickZoom.enable(); map.touchZoom.enable(); map.keyboard.enable();
+      if (!map.zoomControl) map.zoomControl = window.L.control.zoom();
+      map.zoomControl.addTo(map);
+    }
+    requestAnimationFrame(mapSizeChanged);
+  }
+  function mountRouteMap(hike) {
+    const panel = $('detail').querySelector('detail-map');
+    const overview = document.createElement('detail-overview');
+    // The overview and elevation stay available independently of the online map.
+    panel.prepend(overview);
+    for (const element of [...panel.children]) if (element !== overview && element.tagName.toLowerCase() !== 'detail-profile') overview.append(element);
+    const section = document.createElement('detail-interactive');
+    section.innerHTML = `<h2>La carte autour du parcours</h2><detail-map-preview><div id="interactive-map" class="interactive-map-canvas" aria-label="Carte de ${esc(hike.name)}">${mapSvg(hike, true)}</div><button id="map-expand" class="map-expand" aria-label="Agrandir la carte de ${esc(hike.name)}" aria-haspopup="dialog"><span>Agrandir la carte ↗</span></button></detail-map-preview><p class="map-status" id="map-status" role="status">Cliquez sur la carte pour l’agrandir. Coordonnées GPS locales ; fond OpenStreetMap en ligne.</p>`;
+    panel.append(section);
+    const canvas = $('interactive-map'), preview = section.querySelector('detail-map-preview');
+    routeMap = { canvas, preview, name: hike.name, map: null, bounds: null };
+    $('map-expand').addEventListener('click', openLargeMap);
+    if (!window.L || location.protocol === 'file:' || !navigator.onLine) {
+      $('map-status').textContent = 'Aperçu GPS local disponible. Le fond OpenStreetMap sera accessible en ligne depuis le site.';
+      return;
+    }
+    canvas.replaceChildren();
+    const L = window.L;
+    const map = L.map(canvas, { zoomControl: false, dragging: false, scrollWheelZoom: false, doubleClickZoom: false, touchZoom: false, keyboard: false, boxZoom: false, zoomAnimation: false, fadeAnimation: false });
+    routeMap.map = map;
+    const latLngPaths = hike.coords.map(line => line.map(point => [point[1], point[0]]));
+    const line = L.polyline(latLngPaths, { color: '#aa603a', weight: 4, opacity: .95 }).addTo(map);
+    const points = latLngPaths.flat(), start = points[0], end = points.at(-1);
+    L.circleMarker(start, { radius: 6, color: '#fff', weight: 2, fillColor: '#334d3d', fillOpacity: 1 }).addTo(map).bindPopup('Départ · ' + esc(hike.departure));
+    if (Math.hypot(start[0] - end[0], start[1] - end[1]) > .00015) L.circleMarker(end, { radius: 6, color: '#fff', weight: 2, fillColor: '#aa603a', fillOpacity: 1 }).addTo(map).bindPopup('Arrivée · ' + esc(hike.arrival));
+    routeMap.bounds = line.getBounds();
+    map.fitBounds(routeMap.bounds, { padding: [24, 24], maxZoom: 16 });
+    const tiles = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, keepBuffer: 0, attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors' });
+    tiles.on('tileerror', () => { if ($('map-status')) $('map-status').textContent = 'Fond OpenStreetMap momentanément indisponible. Le tracé GPS local reste affiché.'; });
+    tiles.on('tileload', () => { if ($('map-status')) $('map-status').textContent = 'Cliquez sur la carte pour l’agrandir. Coordonnées GPS locales ; fond OpenStreetMap en ligne.'; });
+    tiles.addTo(map);
+    L.control.scale({ imperial: false }).addTo(map);
+    routeMap.observer = new ResizeObserver(() => requestAnimationFrame(mapSizeChanged));
+    routeMap.observer.observe(canvas);
+  }
   function renderRows() {
     const pageSize = state.pageSize === 'all' ? Math.max(1, filtered.length) : state.pageSize;
     const pageCount = Math.max(1, Math.ceil(filtered.length / pageSize));
@@ -199,7 +268,7 @@
     currentEvents = occurrences(state.date, state.mode).filter(e => !state.valleys.length || e.valleys.some(v => state.valleys.includes(v)));
     filtered = hikes.filter(matches).sort(compare);
     renderRows(); renderChips(); renderAgenda(); syncUrl();
-    if (location.hash.startsWith('#rando-')) renderDetail(location.hash.slice(7), false);
+    if (location.hash.startsWith('#rando-') && !$('detail').hidden) renderDetail(location.hash.slice(7), false);
   }
   function syncControls() {
     $('search').value = state.query;
@@ -224,6 +293,7 @@
     state.date = value; changed();
   }
   function renderDetail(id, scroll = true) {
+    destroyRouteMap();
     const h = hikes.find(hike => hike.id === id);
     $('explorer').hidden = true; $('detail').hidden = false;
     if (!h) {
@@ -235,6 +305,7 @@
     const range = period(state.date, state.mode), related = occurrences(state.date, state.mode).filter(e => e.valleys.some(v => h.valleys.includes(v)));
     const lat = h.departureCoords?.[1], lon = h.departureCoords?.[0];
     $('detail').innerHTML = `<detail-nav><a href="#catalogue" id="detail-back">← Toutes les randonnées</a><span class="soft-label">${esc(h.provider)} · vérifié le ${dateLabel(meta.verifiedAt)}</span></detail-nav><detail-header>${badges(h.valleys)}<h1 tabindex="-1">${esc(h.name)}</h1><detail-badges><span class="badge">${esc(h.route)}</span><span class="badge">${esc(h.degree)}</span>${!h.dayHike ? '<span class="badge">Itinérance · plusieurs jours</span>' : ''}</detail-badges><p>Au départ de ${esc(h.departure)}, un itinéraire de ${h.distance} km dans ${h.valleys.length > 1 ? 'les secteurs' : 'le secteur'} ${esc(h.valleys.join(' et '))}.${h.features.summit.value ? ' Un sommet est repéré dans la fiche officielle.' : ''}${h.features.lake.value ? ' Le parcours mentionne un lac.' : ''}</p></detail-header><detail-metrics><div><dt>Dénivelé positif</dt><dd>+${h.ascent.toLocaleString('fr-FR')} m<small>montée cumulée</small></dd></div><div><dt>Dénivelé négatif</dt><dd>−${h.descent.toLocaleString('fr-FR')} m<small>descente cumulée</small></dd></div><div><dt>Temps du parcours</dt><dd>${hoursLabel(h.hours)}<small>${h.route === 'Aller simple' ? 'aller seul · retour à organiser' : h.route === 'Aller-retour' ? 'aller + retour' : h.route === 'Boucle' ? 'boucle complète' : 'durée totale officielle'}</small></dd></div><div><dt>Distance</dt><dd>${h.distance} km<small>distance planimétrique</small></dd></div><div><dt>Altitude minimale</dt><dd>${h.minElevation.toLocaleString('fr-FR')} m<small>sur le parcours</small></dd></div><div><dt>Altitude maximale</dt><dd>${h.maxElevation.toLocaleString('fr-FR')} m<small>sur le parcours GPS</small></dd></div></detail-metrics><detail-grid><detail-map><h2>Le parcours, d’un coup d’œil</h2>${mapSvg(h, true)}<p class="map-caption">Tracé issu des données GPS officielles. Nord en haut, projection locale approximative, sans fond topographique. Cet aperçu sert à visualiser le parcours ; emportez la carte officielle pour vous orienter.</p><detail-actions>${h.gpx ? `<a href="${esc(h.gpx)}" target="_blank" rel="noopener noreferrer">Télécharger le GPX ↗</a>` : ''}${h.pdf ? `<a href="${esc(h.pdf)}" target="_blank" rel="noopener noreferrer">Carte & topo PDF ↗</a>` : ''}${lat != null && lon != null ? `<a href="https://www.openstreetmap.org/?mlat=${lat}&mlon=${lon}#map=14/${lat}/${lon}" target="_blank" rel="noopener noreferrer">Situer le départ ↗</a>` : ''}</detail-actions><detail-profile><h3>Le relief de l’itinéraire</h3>${profileSvg(h)}<p class="data-note">Profil calculé à partir du tracé GPS simplifié. Durées et dénivelés : valeurs publiées par ${esc(h.provider)}.</p></detail-profile></detail-map><detail-information><section><h2>Préparer la sortie</h2><dl><dt>Départ</dt><dd>${esc(h.departure)}</dd><dt>Arrivée</dt><dd>${esc(h.arrival)}</dd><dt>Format</dt><dd>${esc(h.route)}${h.route === 'Aller simple' ? ' · prévoir une navette ou un retour distinct.' : ''}</dd><dt>Difficulté</dt><dd>${esc(h.degree)} · échelle ${esc(h.provider)}</dd><dt>Coordonnées</dt><dd>${lat != null && lon != null ? `${lat.toFixed(5)}° N, ${lon.toFixed(5)}° E` : 'Non renseignées'}</dd><dt>Fiche actualisée</dt><dd>${dateLabel(h.updated)}</dd></dl></section><section><h2>Col, sommet ou lac ?</h2><detail-features>${Object.keys(featureNames).map(key => `<detail-feature><strong>${status(h, key)} ${featureNames[key]} ${h.features[key].value ? 'repéré' : 'non renseigné'}</strong>${h.features[key].value ? `<p>${esc(h.features[key].method)}. ${h.features[key].method.startsWith('Repérage') ? `Extrait : « ${esc(h.features[key].evidence)}… »` : ''}</p>` : '<p>La source ne permet pas de le confirmer. Cela ne signifie pas que cet élément est absent.</p>'}</detail-feature>`).join('')}</detail-features><p style="margin-top:10px">Le repérage textuel est indicatif : vérifiez les destinations, variantes et passages dans le topo officiel.</p></section><section><h2>Le topo officiel</h2>${h.excerpt ? `<p>Présentation de la source : « ${esc(h.excerpt)}${h.excerpt.endsWith('.') ? '' : '…'} »</p>` : ''}<detail-source-links>${h.sources.map(s => `<a href="${esc(s.url)}" target="_blank" rel="noopener noreferrer">Itinéraire détaillé · ${esc(s.name)} ↗</a>`).join('')}</detail-source-links><p>Retrouvez les balises, consignes, accès et variantes dans la fiche officielle.${h.sources.length > 1 ? ' Plusieurs sources décrivent cet itinéraire ; leurs valeurs peuvent différer.' : ''}</p></section><section><h2>Avant de partir</h2><p><a href="https://randoxygene.departement06.fr/listes-des-itineraires-fermes" target="_blank" rel="noopener noreferrer">Vérifier les fermetures de sentiers ↗</a><br><a href="https://www.inforoutes06.fr/" target="_blank" rel="noopener noreferrer">Vérifier l’accès routier ↗</a><br><a href="https://meteofrance.com/meteo-montagne/alpes-du-sud" target="_blank" rel="noopener noreferrer">Consulter la météo montagne ↗</a></p></section></detail-information></detail-grid><detail-events><agenda-heading><agenda-title><p class="eyebrow">DANS ${h.valleys.length > 1 ? 'CES VALLÉES' : 'LA VALLÉE'}</p><h2>Les rendez-vous de votre sortie</h2></agenda-title><agenda-controls><label>Date de sortie<input id="detail-date" type="date" value="${state.date}" aria-label="Date de sortie de la randonnée"></label><group-control role="group" aria-label="Période des événements de la randonnée"><button data-mode="day" aria-pressed="${state.mode === 'day'}">Le jour</button><button data-mode="week" aria-pressed="${state.mode === 'week'}">La semaine</button></group-control></agenda-controls></agenda-heading><p class="data-note">${state.mode === 'day' ? dateLabel(state.date) : `Du ${shortDate(range.start)} au ${dateLabel(range.end)}`} · Événements dans le même secteur, sans garantie de proximité avec le départ.</p><agenda-grid>${cards(related)}</agenda-grid><p class="data-note" style="margin-top:15px">Agenda partiel vérifié le ${dateLabel(meta.verifiedAt)}. Confirmer les dates et horaires auprès de l’organisateur.</p></detail-events>`;
+    mountRouteMap(h);
     $('detail-date').addEventListener('change', e => updateDate(e.target.value));
     $('detail').querySelectorAll('[data-mode]').forEach(button => button.addEventListener('click', () => { state.mode = button.dataset.mode; changed(); }));
     if (scroll) { window.scrollTo(0, 0); $('detail').querySelector('h1').focus({ preventScroll: true }); }
@@ -242,6 +313,7 @@
   function handleHash() {
     if (location.hash.startsWith('#rando-')) { openFilters(false); renderDetail(location.hash.slice(7)); }
     else {
+      destroyRouteMap();
       $('explorer').hidden = false; $('detail').hidden = true; document.title = 'Rando tentative';
       if (location.hash === '#catalogue' || location.hash === '#agenda') {
         $(location.hash.slice(1)).scrollIntoView({ behavior: 'auto' });
@@ -309,6 +381,9 @@
   matchMedia('(min-width:1001px)').addEventListener('change', e => { if (e.matches && $('filters').dataset.open === 'true') openFilters(false); });
   ['about-open', 'footer-about'].forEach(id => $(id).addEventListener('click', showSources));
   $('about-close').addEventListener('click', () => $('about-dialog').close());
+  $('map-close').addEventListener('click', () => $('map-dialog').close());
+  $('map-dialog').addEventListener('close', closeLargeMap);
+  $('map-fit').addEventListener('click', mapSizeChanged);
   $('about-dialog').addEventListener('click', e => { if (e.target === $('about-dialog')) { const r = $('about-dialog').getBoundingClientRect(); if (e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom) $('about-dialog').close(); } });
   window.addEventListener('hashchange', handleHash);
   syncControls(); render(); handleHash();
