@@ -1,0 +1,7 @@
+dist/
+node_modules/
+data/research.json
+data/mercantour-research.json
+.DS_Store
+*.log
+preview*.png

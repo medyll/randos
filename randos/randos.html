@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#334d3d">
+  <meta name="description" content="Rando tentative : explorer les randonnées des Alpes-Maritimes par vallée, dénivelé, col, sommet et lac. Agenda local et tracés GPS.">
+  <title>Rando tentative</title>
+  <link rel="icon" href="./favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="./randos.css">
+  <script defer src="./catalogue.js"></script>
+  <script defer src="./randos.js"></script>
+</head>
+<body>
+<a href="#catalogue" class="skip-link">Aller aux randonnées</a>
+<header-component>
+  <header-brand><a href="#" class="brand-link" aria-label="Rando tentative, accueil"><svg viewBox="0 0 46 46" aria-hidden="true"><rect width="46" height="46" rx="13" fill="#334d3d"/><path d="M8 33 20 13 26 23 30 17 39 33M16 20l4 3 4-3M9 37h29" fill="none" stroke="#f5f2e9" stroke-width="1.8" stroke-linejoin="round"/></svg><span>Rando tentative<small>LES ALPES-MARITIMES, À PIED</small></span></a></header-brand>
+  <nav aria-label="Navigation principale"><a href="#catalogue" class="nav-link">Les randonnées</a><a href="#agenda" class="nav-link">L’agenda des vallées</a><button id="about-open" class="nav-link">Les sources <span aria-hidden="true">↗</span></button></nav>
+  <span class="department-mark">06 <span>ALPES<br>MARITIMES</span></span>
+</header-component>
+<main>
+<explorer-component id="explorer">
+  <explorer-hero>
+    <explorer-intro><p class="eyebrow">DES VALLÉES AUX SOMMETS</p><h1>La prochaine randonnée<br>commence <em>ici.</em></h1><p>Un col, un lac, un sommet. Trouvez votre chemin dans les Alpes-Maritimes, et une bonne raison de prolonger la journée.</p><group-meta><span><strong id="hero-count">—</strong> itinéraires sourcés</span><span><strong>6</strong> secteurs à explorer</span><span class="edition-mark">ÉDITION <span id="edition-year">2026</span></span></group-meta></explorer-intro>
+    <explorer-art aria-hidden="true"><svg viewBox="0 0 620 310" fill="none"><defs><pattern id="hero-lines" width="20" height="20" patternUnits="userSpaceOnUse"><path d="M20 0H0V20" stroke="#a9b6a0" stroke-width=".4" opacity=".35"/></pattern></defs><rect width="620" height="310" fill="url(#hero-lines)"/><circle cx="461" cy="69" r="33" fill="#dbcba5"/><path d="M0 252 72 206 123 220 260 47 369 193 430 140 620 256V310H0Z" fill="#d2dbcc"/><path d="m260 47-77 130 38-12 27 19 12-33 31 28 10-30z" fill="#f9f8f0"/><path d="M0 310V264l131-69 74 54 125-133 83 89 61-46 146 121v30z" fill="#a8ba9d"/><path d="m330 116-61 91 37-7 23-39 31 23 8-25z" fill="#e8eddf"/><path d="M0 310v-34l133-19 80 42 71-43 104 8 49-35 183 53v28z" fill="#5b795c"/><path d="M468 310c-38-37-142-24-157-53-17-33 91-33 47-65" stroke="#f3d0af" stroke-width="3" stroke-dasharray="6 5"/><circle cx="358" cy="192" r="5" fill="#bb6b43" stroke="#fbf8f0" stroke-width="2"/><path d="M54 70h35m-17-17v35" stroke="#8c9e83"/><text x="395" y="58" fill="#5d715b" font-size="10" font-family="sans-serif" letter-spacing="2">L’APPEL DU DEHORS</text><text x="505" y="298" fill="#edf0e5" font-size="10" font-family="sans-serif" letter-spacing="2">43° N · 7° E</text></svg></explorer-art>
+  </explorer-hero>
+  <explorer-workspace>
+    <button id="filter-backdrop" class="filter-backdrop" aria-label="Fermer les filtres" hidden></button>
+    <filters-component id="filters" aria-label="Filtres de randonnée">
+      <filters-heading><h2>Affiner l’escapade</h2><button id="reset" class="text-button">Tout effacer</button><button id="filter-close" class="icon-button" aria-label="Fermer les filtres">×</button></filters-heading>
+      <p class="filter-hint">Les critères se combinent.</p>
+      <fieldset><legend>Les vallées</legend><filters-options id="valley-options"></filters-options></fieldset>
+      <fieldset><legend>Dénivelé positif <span>D+</span></legend><filters-options id="ascent-options"></filters-options></fieldset>
+      <fieldset><legend>Au fil du chemin</legend><filters-options id="feature-options"><label><input type="checkbox" name="feature" value="col"><span>Un col à franchir</span><span class="feature-symbol">↗</span></label><label><input type="checkbox" name="feature" value="summit"><span>Un sommet à atteindre</span><span class="feature-symbol">△</span></label><label><input type="checkbox" name="feature" value="lake"><span>Un lac à découvrir</span><span class="feature-symbol">≈</span></label></filters-options><p class="filter-hint">Éléments repérés dans les fiches officielles ; à confirmer dans le topo.</p></fieldset>
+      <fieldset><legend>Format de la sortie</legend><filters-options><label><input type="checkbox" id="day-only"><span>À la journée uniquement</span></label><label><input type="checkbox" id="event-only"><span>Avec un événement dans la vallée</span></label></filters-options></fieldset>
+      <filters-footnote><span aria-hidden="true">⌖</span><p>Le chemin peut évoluer.<br><a href="https://randoxygene.departement06.fr/listes-des-itineraires-fermes" target="_blank" rel="noopener noreferrer">Consulter les sentiers fermés ↗</a></p></filters-footnote>
+      <button id="filter-apply" class="primary-button">Voir les itinéraires</button>
+    </filters-component>
+    <explorer-results>
+      <catalogue-component id="catalogue">
+        <catalogue-heading><catalogue-title><p class="eyebrow">CHOISIR SON CHEMIN</p><h2>Les randonnées <span id="result-count">—</span></h2></catalogue-title><label class="search-label"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5"/></svg><input type="search" id="search" placeholder="Un nom, un village…" aria-label="Rechercher un itinéraire ou un départ"></label></catalogue-heading>
+        <catalogue-toolbar><group-control><button id="filter-open" class="outline-button">☷ Filtres <span id="mobile-filter-count"></span></button><p id="result-description" aria-live="polite"></p></group-control><label class="sort-label">Trier par <select id="sort-select" aria-label="Trier les randonnées"><option value="name:asc">Nom · A → Z</option><option value="name:desc">Nom · Z → A</option><option value="valley:asc">Vallée</option><option value="ascent:asc">Dénivelé · croissant</option><option value="ascent:desc">Dénivelé · décroissant</option><option value="col:desc">Col</option><option value="summit:desc">Sommet</option><option value="lake:desc">Lac</option><option value="hours:asc">Durée · croissante</option><option value="hours:desc">Durée · décroissante</option><option value="events:desc">Événements · nombre</option><option value="plan:asc">Plan · distance</option></select></label></catalogue-toolbar>
+        <catalogue-active id="active-filters" aria-label="Filtres appliqués"></catalogue-active>
+        <catalogue-table-wrap><table id="hikes-table"><caption class="sr-only">Randonnées : cliquez sur une entête pour trier ou sur un nom pour consulter la fiche détaillée.</caption><thead><tr><th scope="col" data-key="name" aria-sort="ascending"><button>Itinéraire <span>↑</span></button></th><th scope="col" data-key="valley"><button>Vallée <span>↕</span></button></th><th scope="col" data-key="ascent"><button>D+ <span>↕</span></button></th><th scope="col" data-key="col"><button>Col <span>↕</span></button></th><th scope="col" data-key="summit"><button>Sommet <span>↕</span></button></th><th scope="col" data-key="lake"><button>Lac <span>↕</span></button></th><th scope="col" data-key="hours"><button>Temps total <span>↕</span></button></th><th scope="col" data-key="events"><button>Événements <span>↕</span></button></th><th scope="col" data-key="plan"><button>Plan <span>↕</span></button></th></tr></thead><tbody id="hikes-body"></tbody></table></catalogue-table-wrap>
+        <catalogue-empty id="empty-results" hidden><span aria-hidden="true">⌁</span><h3>Aucun chemin avec ces critères</h3><p>Essayez une autre vallée ou une tranche de dénivelé plus large.</p><button id="empty-reset" class="outline-button">Effacer les filtres</button></catalogue-empty>
+        <catalogue-pagination><p id="page-description"></p><group-control><button id="previous-page" class="outline-button" aria-label="Page précédente">←</button><span id="page-number"></span><button id="next-page" class="outline-button" aria-label="Page suivante">→</button></group-control></catalogue-pagination>
+        <p class="data-note">D+ : montée cumulée. Temps : parcours complet pour les boucles et allers-retours ; aller seul pour les traversées. <span class="unknown-mark">—</span> : non renseigné. Aperçus : tracés GPS sans fond topographique ; le tri « Plan » utilise la distance.</p>
+      </catalogue-component>
+      <agenda-component id="agenda">
+        <agenda-heading><agenda-title><p class="eyebrow">PROLONGER LA JOURNÉE</p><h2>Ça se passe dans les vallées <span aria-hidden="true">✳</span></h2><p>Fêtes, marchés et rendez-vous autour de votre sortie.</p></agenda-title><agenda-controls><label>Votre date<input type="date" id="date" required aria-label="Choisir la date de sortie"></label><group-control role="group" aria-label="Période de l’agenda"><button id="mode-day" aria-pressed="false">Le jour</button><button id="mode-week" aria-pressed="true">La semaine</button></group-control></agenda-controls></agenda-heading>
+        <agenda-period><p id="period-label" aria-live="polite"></p><span id="event-count"></span></agenda-period>
+        <agenda-grid id="events-grid"></agenda-grid>
+        <p class="data-note" id="agenda-note"></p>
+        <agenda-sources><span>Les agendas officiels</span><a href="https://www.explorenicecotedazur.com/evenements/agenda-de-tous-les-evenements/" target="_blank" rel="noopener noreferrer">Tinée · Vésubie ↗</a><a href="https://www.menton-riviera-merveilles.fr/sorganiser/agenda/tout-lagenda/" target="_blank" rel="noopener noreferrer">Roya · Bévéra ↗</a><a href="https://www.valberg.com/agenda/tout-lagenda/" target="_blank" rel="noopener noreferrer">Var · Cians ↗</a></agenda-sources>
+      </agenda-component>
+    </explorer-results>
+  </explorer-workspace>
+</explorer-component>
+<detail-component id="detail" hidden aria-label="Fiche détaillée de randonnée"></detail-component>
+</main>
+<footer-component><p><strong>Rando tentative</strong> <span>Dehors, c’est encore mieux.</span></p><button id="footer-about" class="text-button">Couverture & sources</button><span id="verified-label"></span></footer-component>
+<dialog id="about-dialog" aria-labelledby="about-title"><sources-component><sources-heading><h2 id="about-title">Un catalogue, des sources.</h2><button id="about-close" class="icon-button" aria-label="Fermer les sources">×</button></sources-heading><sources-body id="sources-body"></sources-body></sources-component></dialog>
+<noscript><p>Activez JavaScript pour filtrer les itinéraires, consulter les fiches et sélectionner une date.</p></noscript>
+</body>
+</html>
