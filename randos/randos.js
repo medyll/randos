@@ -180,6 +180,10 @@
   function renderAgenda() {
     const range = period(state.date, state.mode);
     $('date').value = state.date;
+    $('catalogue-date').value = state.date;
+    $('catalogue-mode-day').setAttribute('aria-pressed', state.mode === 'day');
+    $('catalogue-mode-week').setAttribute('aria-pressed', state.mode === 'week');
+    $('catalogue-period').textContent = state.mode === 'day' ? dateLabel(state.date) : `Du ${shortDate(range.start)} au ${dateLabel(range.end)}`;
     $('mode-day').setAttribute('aria-pressed', state.mode === 'day');
     $('mode-week').setAttribute('aria-pressed', state.mode === 'week');
     $('period-label').textContent = state.mode === 'day' ? dateLabel(state.date) : `Du ${shortDate(range.start)} au ${dateLabel(range.end)}`;
@@ -277,6 +281,8 @@
   });
   $('sort-select').addEventListener('change', e => { [state.sortKey, state.sortDir] = e.target.value.split(':'); changed(); });
   $('date').addEventListener('change', e => updateDate(e.target.value));
+  $('catalogue-date').addEventListener('change', e => updateDate(e.target.value));
+  ['day', 'week'].forEach(mode => $(`catalogue-mode-${mode}`).addEventListener('click', () => { state.mode = mode; changed(); }));
   ['day', 'week'].forEach(mode => $(`mode-${mode}`).addEventListener('click', () => { state.mode = mode; changed(); }));
   ['reset', 'empty-reset'].forEach(id => $(id).addEventListener('click', reset));
   $('previous-page').addEventListener('click', () => { state.page--; renderRows(); $('catalogue').scrollIntoView({ behavior: 'auto' }); });
