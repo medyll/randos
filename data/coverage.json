@@ -1,0 +1,39 @@
+{
+  "verifiedAt": "2026-10-12",
+  "primaryCatalog": 285,
+  "primarySelected": 176,
+  "secondaryCatalog": 160,
+  "secondarySelected": 50,
+  "merged": 5,
+  "total": 221,
+  "scope": "Randonnées pédestres du catalogue RandOxygène dans les six secteurs demandés, complétées par les fiches publiées du Mercantour au départ du 06. Les variantes, itinérances et sentiers non publiés ne forment pas un inventaire exhaustif de toutes les randonnées possibles.",
+  "featureMethod": "Cols, sommets et lacs repérés dans le nom et le texte du parcours officiel. Repérage automatique à confirmer dans la fiche source ; une donnée absente est notée non renseignée. Les descriptions d’accès routier sont exclues.",
+  "eventScope": "Sélection d’événements et de marchés vérifiés auprès des organisateurs et offices de tourisme. Cet agenda ne constitue pas un recensement exhaustif.",
+  "merges": [
+    {
+      "primary": "r4607",
+      "secondary": "m90418",
+      "name": "Circuit d'Amen"
+    },
+    {
+      "primary": "r20706",
+      "secondary": "m141828",
+      "name": "Circuit du Démant"
+    },
+    {
+      "primary": "r20756",
+      "secondary": "m90488",
+      "name": "Le Lac Agnel"
+    },
+    {
+      "primary": "r4604",
+      "secondary": "m91036",
+      "name": "Le hameau de la Colle"
+    },
+    {
+      "primary": "m90439",
+      "secondary": "m194374",
+      "name": "Randonnée au Col du Sabion"
+    }
+  ]
+}
